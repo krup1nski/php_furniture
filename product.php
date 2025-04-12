@@ -270,6 +270,31 @@
                 $(this).addClass('active')
             })
 
+            // Plus
+            $('.page-product-main-action__count_plus').on('click', function (){
+                let count = $(this).siblings('input[name="count"]').val();
+                $(this).siblings('input[name="count"]').val(Number(count) + 1);
+            })
+            // Minus
+            $('.page-product-main-action__count_minus').on('click', function (){
+                let count = $(this).siblings('input[name="count"]').val();
+                if(count > 1){
+                    $(this).siblings('input[name="count"]').val(Number(count) - 1);
+                }
+            })
+
+            //выбор цвета
+
+            $('.page-product-main-options__item').on('click', function (){
+                if($(this).hasClass('active')){
+                    $(this).removeClass('active')
+                }else{
+                    $(this).parents('.page-product-main-options__items').find('.page-product-main-options__item').removeClass('active')
+                    $(this).addClass('active')
+                }
+
+            })
+
         });
     </script>
 

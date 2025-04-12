@@ -62,17 +62,8 @@
             <div class="page-cart-main">
                 <div class="page-cart-product-list">
 
-<!--                    --><?php //$products = $_SESSION['cart']['products'];?>
+                    <?php foreach ($_SESSION['cart'] as $product): ?>
 
-                    <?php
-                    global $pdo;
-                    $sql = "SELECT * FROM `products` LIMIT 2";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->execute();
-                    $products = $stmt->fetchAll();
-                    ?>
-
-                    <?php foreach ($products as $product): ?>
                     <div class="page-cart-product-list-item">
                         <div class="page-cart-product-list-item__info_wrap">
                             <input type="hidden" name="product_id" value="${item.product_id}" >
@@ -83,9 +74,14 @@
                             </div>
                             <div class="page-cart-product-list-item__info">
                                 <a href="product.php?product_id=<?=$product['id']?>" class="mini-product__title"><?=$product['title']?></a>
-                                <div class="page-cart-product-list-item_options">options</div>
-                                <div class="page-cart-product-list-item_accessories cart-accessories">accessories
-                                </div>
+
+                                <?php if(isset($_SESSION['cart']['options'])):?>
+                                    <div class="page-cart-product-list-item_options">options</div>
+                                <?php endif;?>
+                                <?php if(isset($_SESSION['cart']['accessories'])):?>
+                                    <div class="page-cart-product-list-item_accessories cart-accessories">accessories</div>
+                                <?php endif;?>
+
                             </div>
                             <div class="page-cart-product-list-item__count">
                                 <span class="page-cart-product-list-item__count_minus">-</span>

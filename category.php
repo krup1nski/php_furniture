@@ -24,6 +24,31 @@
 </head>
 <body>
 
+<?php
+//tt($_POST);
+//tt($_SESSION);
+
+if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
+
+    if(isset($_SESSION['cart']['product_'.$_POST['product_article']])){
+        echo "<script>alert('Товар уже в корзине!');</script>";
+    }else{
+        $_SESSION['cart']['product_'.$_POST['product_article']] = [
+            'id' => $_POST['product_id'],
+            'title' => $_POST['product_title'],
+            'sale' => $_POST['product_sale'],
+            'price' => $_POST['product_price'],
+            'count' => 1,
+            'image_path' => $_POST['image_path'],
+            'options' => [],
+            'accessories' => [],
+        ];
+        echo "<script>alert('Товар добавлен!');</script>";
+    }
+}
+
+?>
+
 <?php include 'layouts/header.php'; ?>
 
 <?php $page_category = select_one('categories', $_GET['id_category']) ?>
@@ -51,9 +76,11 @@
     </div>
 
 
+
+
 <div class="page-category">
     <div class="container">
-        <form action="" method="post" class="pc-filter">
+        <form action="" method="POST" class="pc-filter">
             <input type="hidden" name="order_by" value="">
             <div class="pc-filter__top">
                 <div class="pc-filter__title">Фильтр</div>
@@ -77,7 +104,6 @@
                 </div>
                 <div id="filter-price-slider" class="pc-filter-price__slider"></div>
             </div>
-
             <div class="pc-filter__item">
                 <div class="pc-filter__item_top">
                     <span class="pc-filter__item_title">Кошечки мурмявочки</span>
@@ -153,13 +179,13 @@
 
                     <?php $products = select_all('products', ['categories_id'=>$_GET['id_category']]);?>
                     <?php foreach ($products as $product): ?>
-                    <div class="mini-product">
-                        <input type="hidden" name="product_id" value="<?=$product['id']?>">
-                        <input type="hidden" name="product_title" value="<?=$product['title']?>">
-                        <input type="hidden" name="product_hash" value="<?=$product['hash']?>">
-                        <input type="hidden" name="product_price" value="<?=$product['price']?>">
-                        <input type="hidden" name="product_sale" value="<?=$product['sale']?>">
-                        <input type="hidden" name="product_img" value="<?=$product['image_path']?>">
+                    <form action="" method="POST" class="mini-product">
+                        <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
+                        <input type="hidden" name="product_title" value="<?= $product['title'] ?>">
+                        <input type="hidden" name="product_article" value="<?= $product['article'] ?>">
+                        <input type="hidden" name="product_sale" value="<?= $product['sale'] ?>">
+                        <input type="hidden" name="product_price" value="<?= $product['price'] ?>">
+                        <input type="hidden" name="image_path" value="<?= $product['image_path'] ?>">
 
 
                         <div class="mini-product__top">
@@ -213,16 +239,16 @@
 
                         </div>
                         <?php if(!empty($product['quantity'])): ?>
-                            <div class="mini-product__buy">
+                            <button type="submit" class="mini-product__buy">
                                 <i class="fa-solid fa-cart-shopping"></i>
-                            </div>
+                            </button>
                         <?php else: ?>
                             <div class="mini-product__not-buy">
                                 <i class="fa-solid fa-cart-shopping"></i>
                             </div>
                         <?php endif; ?>
 
-                    </div>
+                    </form>
                     <?php endforeach;?>
                 </div>
             </div>

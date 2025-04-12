@@ -45,9 +45,9 @@
             <a href="" class="ml-callback__call">Заказать звонок</a>
         </div>
         <div class="ml-action flex-center">
-            <div class="ml-action_compare">
-                <div class="ml-action_cart_icon">
-                    <span class="ml-action_cart__count">0</span>
+            <div class="ml-action_cart">
+                <div class="ml-action_compare_icon">
+                    <span class="ml-action_compare__count">0</span>
                     <i class="fa-solid fa-equals"></i>
                 </div>
             </div>
@@ -60,8 +60,16 @@
                 </div>
 
             </div>
+
             <div class="ml-action_cart">
-                <span class="ml-action_cart__count">0</span>
+                <span class="ml-action_cart__count">
+                    <?php if(isset($_SESSION['cart'])): ?>
+                        <?=count($_SESSION['cart'])?>
+                    <?php else:?>
+                    0
+                    <?php endif;?>
+                </span>
+
                 <div class="ml-action_cart_icon">
                     <i class="fa-solid fa-cart-shopping"></i>
                 </div>

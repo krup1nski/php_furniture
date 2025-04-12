@@ -162,7 +162,7 @@ body{
 .ml-action_like_icon{
     position: relative;
 }
-.ml-action__like_count{
+.ml-action__like_count, .ml-action_cart__count, .ml-action_compare__count{
     position: absolute;
     left: 12px;
     top: -12px;
@@ -183,21 +183,6 @@ body{
     color: var(--text);
     text-decoration: none;
     position: relative;
-}
-.ml-action_cart__count{
-    position: absolute;
-    left: 12px;
-    top: -12px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background-color: var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #FFF;
-    font-size: 13px;
-    font-weight: 600;
 }
 
 .ml-action_cart_icon i{
