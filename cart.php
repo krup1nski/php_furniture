@@ -75,10 +75,10 @@
                             <div class="page-cart-product-list-item__info">
                                 <a href="product.php?product_id=<?=$product['id']?>" class="mini-product__title"><?=$product['title']?></a>
 
-                                <?php if(isset($_SESSION['cart']['options'])):?>
+                                <?php if(!empty($product['options'])):?>
                                     <div class="page-cart-product-list-item_options">options</div>
                                 <?php endif;?>
-                                <?php if(isset($_SESSION['cart']['accessories'])):?>
+                                <?php if(!empty($product['accessories'])):?>
                                     <div class="page-cart-product-list-item_accessories cart-accessories">accessories</div>
                                 <?php endif;?>
 

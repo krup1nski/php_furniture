@@ -48,7 +48,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
         echo "<script>alert('Товар добавлен!');</script>";
     }
 }
-
 ?>
 
 <?php include 'layouts/header.php'; ?>
@@ -191,7 +190,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
                         </div>
 
                         <?php if (!empty($product['quantity'])): ?>
-                            <a href="{{ route('product', $product->hash) }}"
+                            <a href="product.php?product_id=<?= $product['id']?>"
                                class="mini-product__title"><?= $product['title'] ?></a>
                         <?php else: ?>
                             <a href="" class="mini-product__title_out"><?= $product['title'] ?></a>

@@ -911,8 +911,13 @@ body{
 }
 .page-product-main-options__item{
     margin-right: 5px;
-
+    cursor: pointer;
 }
+.page-product-main-options__item input[type="radio"]:checked + img,
+.page-product-main-options__item input[type="radio"]:checked + .without_img {
+    border: 2px solid var(--accent);
+}
+
 .with_img{
     width: 50px;
     height: 50px;
@@ -1445,6 +1450,18 @@ body{
     cursor: pointer;
 }
 
+.page-product-main-dop__add input:checked + span {
+    background-color: var(--accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 600;
+    width: 20px;
+    height: 20px;
+
+}
 
 /*----------------Аксессуары----------------*/
 .page-accessories{
