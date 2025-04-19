@@ -24,6 +24,40 @@
 </head>
 <body>
 
+<?php tt($_POST)?>
+<?php
+if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
+    $fio = $_POST["name"];
+    $phone = $_POST["phone"];
+    $email = $_POST["email"];
+    $delivery_type = $_POST["delivery"];
+    $comment = $_POST["comment"];
+    $status = 1;
+    $price = 100;
+    global $pdo;
+    $insert_order = "INSERT INTO `orders`(fio, phone, email, delivery_type, comment, status, price) VALUES (?,?,?,?,?,?,?)";
+    $stmt = $pdo->prepare($insert_order);
+    $stmt->execute([$fio, $phone, $email, $delivery_type, $comment, $status, $price]);
+
+    $order_id = $pdo->lastInsertId();
+    // 2. Добавляем товары из корзины
+    if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+        foreach($_SESSION['cart'] as $item) {
+            $insert_product = "INSERT INTO `order_products` 
+                                 (order_id, product_id, count, price) 
+                                 VALUES (?, ?, ?, ?)";
+            $stmt = $pdo->prepare($insert_product);
+            $stmt->execute([
+                $order_id,
+                $item['id'],
+                $item['count'],
+                $item['price']
+            ]);
+        }
+    }
+}
+?>
+
 <?php include 'layouts/header.php'; ?>
 
 <div class="breadcrumbs">
@@ -56,11 +90,7 @@
 
 <div class="page-cart">
 
-    <form action="" method="POST" class="form-order">
-        <input type="hidden" name="cart" value="">
-        <input type="hidden" name="promo_code" value="">
-        <input type="hidden" name="promo_code_sale" value="">
-
+    <form action="" method="post" class="form-order">
         <div class="container">
             <div class="page-cart-main">
                 <div class="page-cart-product-list">
@@ -70,9 +100,6 @@
                     <?php foreach ($_SESSION['cart'] as $key => $product): ?>
                     <div class="page-cart-product-list-item">
                         <div class="page-cart-product-list-item__info_wrap">
-                            <input type="hidden" name="product_id" value="" >
-                            <input type="hidden" name="id" value="" >
-                            <input type="hidden" name="price_result" value="" >
                             <div class="page-cart-product-list-item__img">
                                 <img src="<?=$product['image_path']?>" alt="">
                             </div>
@@ -153,11 +180,11 @@
                 <div class="pcart-main-contact">
                     <span class="pcart-main-contact__title">1.Контактная информация</span>
                     <div class="pcart-main-contact__input-wrap">
-                        <input type="text" name="name" placeholder="ФИО" value="{{ old('name') }}" required >
-                        <input type="text" name="email" placeholder="E-mail" value="{{ old('email') }}">
+                        <input type="text" name="name" placeholder="ФИО" value="" >
+                        <input type="text" name="email" placeholder="E-mail" value="">
                     </div>
                     <div class="pcart-main-contact__input-wrap">
-                        <input type="text" name="phone" placeholder="Телефон" value="{{ old('phone') }}" required>
+                        <input type="text" name="phone" placeholder="Телефон" value="">
                     </div>
                 </div>
                 <div class="pcart-main-delivery">
@@ -173,7 +200,7 @@
                         ?>
                         <?php foreach ($deliveries as $delivery):?>
                         <label class="pcart-main-delivery__item">
-                            <input type="radio" name="delivery" value="{{ $delivery->id }}">
+                            <input type="radio" name="delivery" value="<?=$delivery['id']?>">
                             <div class="pcart-main-delivery__item_box"></div>
                             <div class="pcart-main-delivery__item_info">
                                 <span class="pcart-main-delivery__item_title"><?=$delivery['title']?></span>
@@ -197,11 +224,27 @@
             endforeach;
 
             ?>
+
+
+
+            <?php
+//            tt($_POST);
+            $promo = '';
+            if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['promo'])){
+                $promo = $_POST['code'];
+                global $pdo;
+                $sql = "SELECT * FROM `promo_codes` WHERE code = '$promo'";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->fetch();
+            }
+            ?>
+
             <div class="pcart-main-order">
-                <div class="pcart-main-order-promo">
-                    <input type="text" name="code" class="pcart-main-order-promo__input"
+                <div  class="pcart-main-order-promo">
+                    <input type="text" name="code" class="pcart-main-order-promo__input" value="<?php echo $_POST['code'] ?? '' ?>"
                            placeholder="Промокод">
-                    <button class="pcart-main-order-promo__btn">Применить</button>
+                    <button type="submit" name="promo" class="pcart-main-order-promo__btn">Применить</button>
                 </div>
                 <span class="pcart-main-order-promo__text"></span>
                 <span class="pcart-main-order__title">Ваш заказ</span>
@@ -217,10 +260,14 @@
                     </div>
                     <div class="pcart-main-order__info-item result-product-itog">
                         <div class="pcart-main-order__info-item_title">К оплате:</div>
-                        <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total_order_price?></span> byn</div>
+                        <?php if(!empty($promo)):?>
+                            <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total = ceil($total_order_price - ($total_order_price / 100 * $result['discount']))?></span> byn</div>
+                        <?php else: ?>
+                            <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total_order_price?></span> byn</div>
+                        <?php endif;?>
                     </div>
                     <div class="pcart-main-order__buy-wrap">
-                        <button class="pcart-main-order__buy">Оформить заказ</button>
+                        <button type="submit" name="make_order" class="pcart-main-order__buy">Оформить заказ</button>
                     </div>
                 </div>
             </div>
