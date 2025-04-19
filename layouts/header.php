@@ -42,7 +42,7 @@
         </form>
         <div class="ml-callback">
             <a href="tel:+375441234567" class="ml-callback__phone">+375(44)12-34-567</a>
-            <a href="" class="ml-callback__call">Заказать звонок</a>
+            <a href="<?=BASE_URL?>layouts/clean_sess.php" class="ml-callback__call">Заказать звонок</a>
         </div>
         <div class="ml-action flex-center">
             <div class="ml-action_cart">

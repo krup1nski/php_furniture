@@ -32,42 +32,34 @@
 tt($_SESSION);
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
 
-//    if(isset($_SESSION['cart']['product_'.$_POST['product_article']])){
-//        echo "<script>alert('Товар уже в корзине!');</script>";
-//    }else{
-//        $_SESSION['cart']['product_'.$_POST['product_article']] = [
-//            'id' => $_POST['product_id'],
-//            'title' => $_POST['product_title'],
-//            'sale' => $_POST['product_sale'],
-//            'price' => $_POST['product_price'],
-//            'count' => 1,
-//            'image_path' => $_POST['image_path'],
-//            'options' => [],
-//            'accessories' => $_POST['accessories'],
-//        ];
-//        echo "<script>alert('Товар добавлен!');</script>";
-//    }
+    // Создаем уникальный ключ для корзины с учетом артикула, цвета и размера
+    $color = isset($_POST['color']) ? trim($_POST['color']) : '';
+    $size = isset($_POST['size']) ? trim($_POST['size']) : '';
+    $productKey = 'product_' . $_POST['product_article'] .
+        (!empty($color) ? '_' . $color : '') .
+        (!empty($size) ? '_' . $size : '');
 
-    $color = [];
-    if (isset($_POST["color"])) {
-        $color = $_POST["color"];
+// Проверяем наличие товара в корзине
+    if (isset($_SESSION['cart'][$productKey])) {
+        echo "<script>alert('Товар уже в корзине!');</script>";
+    } else {
+        // Добавляем товар в корзину
+        $_SESSION['cart'][$productKey] = [
+            'id' => htmlspecialchars($_POST['product_id']),
+            'title' => htmlspecialchars($_POST['product_title']),
+            'sale' => isset($_POST['product_sale']) ? floatval($_POST['product_sale']) : 0,
+            'price' => floatval($_POST['product_price']),
+            'count' => $_POST['count'],
+            'image_path' => htmlspecialchars($_POST['image_path']),
+            'options' => [
+                'color' => $color,
+                'size' => $size
+            ],
+            'accessories' => isset($_POST['accessories']) ? $_POST['accessories'] : '',
+        ];
+
+        echo "<script>alert('Товар успешно добавлен в корзину!');</script>";
     }
-    $size = [];
-    if (isset($_POST["size"])) {
-        $size = $_POST["size"];
-    }
-
-
-    $_SESSION['cart']['product_' . $_POST['product_article']] = [
-        'id' => $_POST['product_id'],
-        'title' => $_POST['product_title'],
-        'sale' => $_POST['product_sale'],
-        'price' => $_POST['product_price'],
-        'count' => 1,
-        'image_path' => $_POST['image_path'],
-        'options' => ['color'=>$color, 'size'=>$size],
-        'accessories' => $_POST['accessories'],
-    ];
 
 }
 ?>
@@ -173,7 +165,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
                                     <label class="page-product-main-options__item <?php if (!empty($option['image_path'])) echo 'with_img'; ?>"
                                            data-option-group-id="123" data-option-id="<?=$option['id']?>"
                                            data-option-title="<?=$option['title']?>">
-                                        <input type="radio" name="<?= $group['title'] ?>" value="<?=$option['id']?>" style="display: none;">
+                                        <input type="radio" name="<?= $group['title'] ?>" value="<?=$option['id']?>__<?=$option['title']?>" style="display: none;">
                                         <?php if (!empty($option['image_path'])): ?>
                                             <img src="<?=$option['image_path'] ?>" alt="<?=$option['title']?>">
                                         <?php else: ?>

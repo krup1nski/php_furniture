@@ -40,20 +40,23 @@
         </ul>
     </div>
 </div>
-<div class="container">
-    <h1 class="page-title">Оформление заказа</h1>
 
-    @foreach($errors->all() as $message)
-    <div class="error">{{ $message }}</div>
-    @endforeach
-</div>
+<!--Вывод ошибок-->
+
+<!--<div class="container">-->
+<!--    <h1 class="page-title">Оформление заказа</h1>-->
+<!---->
+<!--    @foreach($errors->all() as $message)-->
+<!--    <div class="error">{{ $message }}</div>-->
+<!--    @endforeach-->
+<!--</div>-->
 
 
 
 
 <div class="page-cart">
 
-    <form action="{{ route('cart-order') }}" method="POST" class="form-order">
+    <form action="" method="POST" class="form-order">
         <input type="hidden" name="cart" value="">
         <input type="hidden" name="promo_code" value="">
         <input type="hidden" name="promo_code_sale" value="">
@@ -62,13 +65,14 @@
             <div class="page-cart-main">
                 <div class="page-cart-product-list">
 
-                    <?php foreach ($_SESSION['cart'] as $product): ?>
+                    <?php $total_order_price = 0; ?>
 
+                    <?php foreach ($_SESSION['cart'] as $key => $product): ?>
                     <div class="page-cart-product-list-item">
                         <div class="page-cart-product-list-item__info_wrap">
-                            <input type="hidden" name="product_id" value="${item.product_id}" >
-                            <input type="hidden" name="id" value="${item.id}" >
-                            <input type="hidden" name="price_result" value="${(item.product_price - (item.product_price * item.product_sale / 100)).toFixed(0)}" >
+                            <input type="hidden" name="product_id" value="" >
+                            <input type="hidden" name="id" value="" >
+                            <input type="hidden" name="price_result" value="" >
                             <div class="page-cart-product-list-item__img">
                                 <img src="<?=$product['image_path']?>" alt="">
                             </div>
@@ -76,16 +80,47 @@
                                 <a href="product.php?product_id=<?=$product['id']?>" class="mini-product__title"><?=$product['title']?></a>
 
                                 <?php if(!empty($product['options'])):?>
-                                    <div class="page-cart-product-list-item_options">options</div>
+                                    <?php foreach ($product['options'] as $key => $value): ?>
+                                        <?php if($value):?>
+                                            <?php $pieces = explode("__", $value);?>
+                                            <div class="page-cart-product-list-item_options"><?=$pieces[1]?></div>
+                                        <?php endif;?>
+                                    <?php endforeach;?>
                                 <?php endif;?>
+
+
+
+                                <?php $total_accessories_price =  0;?>
+
                                 <?php if(!empty($product['accessories'])):?>
-                                    <div class="page-cart-product-list-item_accessories cart-accessories">accessories</div>
+                                    <?php foreach ($product['accessories'] as $key => $value): ?>
+                                        <?php
+                                        global $pdo;
+                                        $id = (int)$value; // Приводим к числу (если ID — integer)
+                                        $sql = "SELECT * FROM `accessories` WHERE `id` = ?";
+                                        $stmt = $pdo->prepare($sql);
+                                        $stmt->execute([$id]);
+                                        $accessory = $stmt->fetch();
+                                        ?>
+                                        <div class="page-cart-product-list-item_accessories cart-accessories">
+                                            <div class="cart-accessories__item">
+                                                <div class="cart-accessories__img">
+                                                    <img src="<?=$accessory['image']?>" alt="">
+                                                </div>
+                                                <div class="cart-accessories__info">
+                                                    <div class="cart-accessories__title"><?=$accessory['name']?></div>
+                                                    <div class="cart-accessories__price"><?=$accessory['price']?> byn</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <?php $total_accessories_price += $accessory['price'];?>
+                                    <?php endforeach;?>
                                 <?php endif;?>
 
                             </div>
                             <div class="page-cart-product-list-item__count">
                                 <span class="page-cart-product-list-item__count_minus">-</span>
-                                <input type="text" name="count" value="1">
+                                <input type="text" name="count" value="<?=$product['count']?>">
                                 <span class="page-cart-product-list-item__count_plus">+</span>
                             </div>
                             <div class="page-cart-product-list-item__price">
@@ -95,19 +130,23 @@
                                     <span class="page-cart-product__price_old"><?=$product['price']?> BYN</span>
                                     <div class="page-cart-product__price_sale-count">-<?=$product['sale']?>%</div>
                                 </div>
-                                <span class="page-cart-product__price_current"><span class="price"><?= ceil($product['price'] - ($product['price'] * $product['sale'] / 100)) ?></span> BYN</span>
+                                <span class="page-cart-product__price_current"><span class="price"><?= $total_accessories_price + ceil($product['price'] - ($product['price'] * $product['sale'] / 100)) ?></span> BYN</span>
+                                <?php $total_order_price += $product['count'] * ($total_accessories_price + ceil($product['price'] - ($product['price'] * $product['sale'] / 100)))?>
                                 <?php else: ?>
                                 <div class="page-cart-product__price_main">
-                                    <span class="page-cart-product__price_current"><span class="price"><?=$product['price']?></span> BYN</span>
+                                    <span class="page-cart-product__price_current"><span class="price"><?=$total_accessories_price + $product['price']?></span> BYN</span>
+                                    <?php $total_order_price += ($product['count'] * $total_accessories_price + $product['price'])?>
                                 </div>
                                 <?php endif; ?>
 
                             </div>
                             <div class="page-cart-product-list-item__remove">
-                                <i class="fa-solid fa-xmark"></i>
+                                <a href="<?= BASE_URL ?>delete.php?session_del_id=<?=$key?>">
+                                <i class="fa-solid fa-xmark"></i></a>
                             </div>
                         </div>
                     </div>
+                    
                     <?php endforeach;?>
 
                 </div>
@@ -150,6 +189,14 @@
                               class="pcart-main-comment__textarea"></textarea>
                 </div>
             </div>
+            <?php
+            $total_count = 0;
+
+            foreach ($_SESSION['cart'] as $key => $product):
+                $total_count += $product['count'];
+            endforeach;
+
+            ?>
             <div class="pcart-main-order">
                 <div class="pcart-main-order-promo">
                     <input type="text" name="code" class="pcart-main-order-promo__input"
@@ -162,15 +209,15 @@
                 <div class="pcart-main-order__info">
                     <div class="pcart-main-order__info-item result-product-count">
                         <div class="pcart-main-order__info-item_title">Всего товаров:</div>
-                        <div class="pcart-main-order__info-item_val"><span class="num">0</span> шт</div>
+                        <div class="pcart-main-order__info-item_val"><span class="num"><?=$total_count?></span> шт</div>
                     </div>
                     <div class="pcart-main-order__info-item result-product-sum">
                         <div class="pcart-main-order__info-item_title">Сумма заказа:</div>
-                        <div class="pcart-main-order__info-item_val"><span class="num">0</span> byn</div>
+                        <div class="pcart-main-order__info-item_val"><span class="num"><?=$total_order_price?></span> byn</div>
                     </div>
                     <div class="pcart-main-order__info-item result-product-itog">
                         <div class="pcart-main-order__info-item_title">К оплате:</div>
-                        <div class="pcart-main-order__info-item_val result"><span class="num">0</span> byn</div>
+                        <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total_order_price?></span> byn</div>
                     </div>
                     <div class="pcart-main-order__buy-wrap">
                         <button class="pcart-main-order__buy">Оформить заказ</button>
