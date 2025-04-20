@@ -32,8 +32,10 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
     $email = $_POST["email"];
     $delivery_type = $_POST["delivery"];
     $comment = $_POST["comment"];
-    $status = 1;
-    $price = 100;
+    $status = 'created';
+    $price = $_POST["total_price"];
+
+
     global $pdo;
     $insert_order = "INSERT INTO `orders`(fio, phone, email, delivery_type, comment, status, price) VALUES (?,?,?,?,?,?,?)";
     $stmt = $pdo->prepare($insert_order);
@@ -43,8 +45,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
     // 2. Добавляем товары из корзины
     if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
         foreach($_SESSION['cart'] as $item) {
-            $insert_product = "INSERT INTO `order_products` 
-                                 (order_id, product_id, count, price) 
+            $insert_product = "INSERT INTO `order_products`
+                                 (order_id, product_id, count, price)
                                  VALUES (?, ?, ?, ?)";
             $stmt = $pdo->prepare($insert_product);
             $stmt->execute([
@@ -53,8 +55,41 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
                 $item['count'],
                 $item['price']
             ]);
+
+            // 3. Добавляем options в бд
+            foreach($item['options'] as $key => $option_item) {
+                tt($key);
+                tt($option_item);
+                $option_id = explode("__", $option_item);
+                tt($option_id);
+                $insert_product = "INSERT INTO `order_product_options`
+                                 (order_id, product_id, option_id)
+                                 VALUES (?, ?, ?)";
+                $stmt = $pdo->prepare($insert_product);
+                $stmt->execute([
+                    $order_id,
+                    $item['id'],
+                    $option_id[0]
+                ]);
+            }
+
+            // 4. Добавляем accessories в бд
+            foreach($item['accessories'] as $key => $access_item) {
+                $insert_product = "INSERT INTO `order_product_accessories`
+                                 (order_id, product_id, accessory_id)
+                                 VALUES (?, ?, ?)";
+                $stmt = $pdo->prepare($insert_product);
+                $stmt->execute([
+                    $order_id,
+                    $item['id'],
+                    $access_item
+                ]);
+            }
         }
     }
+
+    unset($_SESSION['cart']);
+    header("Location: thanks.php?order_id={$order_id}");
 }
 ?>
 
@@ -97,7 +132,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
 
                     <?php $total_order_price = 0; ?>
 
-                    <?php foreach ($_SESSION['cart'] as $key => $product): ?>
+                    <?php foreach ($_SESSION['cart'] as $sess_name => $product): ?>
                     <div class="page-cart-product-list-item">
                         <div class="page-cart-product-list-item__info_wrap">
                             <div class="page-cart-product-list-item__img">
@@ -168,7 +203,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
 
                             </div>
                             <div class="page-cart-product-list-item__remove">
-                                <a href="<?= BASE_URL ?>delete.php?session_del_id=<?=$key?>">
+                                <a href="<?= BASE_URL ?>delete.php?session_del_id=<?=$sess_name?>">
                                 <i class="fa-solid fa-xmark"></i></a>
                             </div>
                         </div>
@@ -180,11 +215,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
                 <div class="pcart-main-contact">
                     <span class="pcart-main-contact__title">1.Контактная информация</span>
                     <div class="pcart-main-contact__input-wrap">
-                        <input type="text" name="name" placeholder="ФИО" value="" >
-                        <input type="text" name="email" placeholder="E-mail" value="">
+                        <input type="text" name="name" placeholder="ФИО" value="<?= isset($_POST['name']) ? htmlspecialchars($_POST['name']) : '' ?>">
+                        <input type="text" name="email" placeholder="E-mail" value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
                     </div>
                     <div class="pcart-main-contact__input-wrap">
-                        <input type="text" name="phone" placeholder="Телефон" value="">
+                        <input type="text" name="phone" placeholder="Телефон" value="<?= isset($_POST['phone']) ? htmlspecialchars($_POST['phone']) : '' ?>">
                     </div>
                 </div>
                 <div class="pcart-main-delivery">
@@ -198,22 +233,27 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
                         $stmt->execute();
                         $deliveries = $stmt->fetchAll();
                         ?>
-                        <?php foreach ($deliveries as $delivery):?>
-                        <label class="pcart-main-delivery__item">
-                            <input type="radio" name="delivery" value="<?=$delivery['id']?>">
-                            <div class="pcart-main-delivery__item_box"></div>
-                            <div class="pcart-main-delivery__item_info">
-                                <span class="pcart-main-delivery__item_title"><?=$delivery['title']?></span>
-                                <span class="pcart-main-delivery__item_desc"><?=$delivery['description']?></span>
-                            </div>
-                        </label>
-                        <?php endforeach;?>
+                        <?php foreach ($deliveries as $delivery): ?>
+                            <label class="pcart-main-delivery__item">
+                                <input
+                                        type="radio"
+                                        name="delivery"
+                                        value="<?= $delivery['id'] ?>"
+                                    <?= (isset($_POST['delivery']) && $_POST['delivery'] == $delivery['id']) ? 'checked' : '' ?>
+                                >
+                                <div class="pcart-main-delivery__item_box"></div>
+                                <div class="pcart-main-delivery__item_info">
+                                    <span class="pcart-main-delivery__item_title"><?= $delivery['title'] ?></span>
+                                    <span class="pcart-main-delivery__item_desc"><?= $delivery['description'] ?></span>
+                                </div>
+                            </label>
+                        <?php endforeach; ?>
                     </div>
                 </div>
                 <div class="pcart-main-comment">
                     <span class="pcart-main-comment__title">3.Комментарий</span>
                     <textarea name="comment" id="" cols="30" rows="10" placeholder="Комментарий к заказу"
-                              class="pcart-main-comment__textarea"></textarea>
+                              class="pcart-main-comment__textarea"><?= isset($_POST['comment']) ? htmlspecialchars($_POST['comment']) : '' ?></textarea>
                 </div>
             </div>
             <?php
@@ -260,8 +300,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
                     </div>
                     <div class="pcart-main-order__info-item result-product-itog">
                         <div class="pcart-main-order__info-item_title">К оплате:</div>
-                        <?php if(!empty($promo)):?>
-                            <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total = ceil($total_order_price - ($total_order_price / 100 * $result['discount']))?></span> byn</div>
+                        <input type="hidden" name="total_price" value="<?=$total_order_price?>">
+                        <?php if(isset($result['discount'])):?>
+                            <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total_order_price = ceil($total_order_price - ($total_order_price / 100 * $result['discount']))?></span> byn</div>
                         <?php else: ?>
                             <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total_order_price?></span> byn</div>
                         <?php endif;?>

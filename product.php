@@ -260,7 +260,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
                             </div>
                             <span class="page-product-main-action__buy_text">В корзину</span>
                         </button>
-                        <a href="" class="page-product-main-action__fast-buy">Купить в 1 клик</a>
+
                     </div>
                 </div>
                 <div class="page-product-main-bottom">

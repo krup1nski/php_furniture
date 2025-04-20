@@ -157,7 +157,7 @@ function select_orders($phone){
 }
 
 //Pagination
-function pag($table, $limit, $offset, $sort_by = null)
+function pag($table, $limit, $offset, $sort_by = null, $category_id = null)
 {
     global $pdo;
 
@@ -165,11 +165,18 @@ function pag($table, $limit, $offset, $sort_by = null)
     $allowedFilters = [
         "name" => "ORDER BY name",
         "asc_price" => "ORDER BY price ASC",
-        "desc_price" => "ORDER BY price DESC"
+        "desc_price" => "ORDER BY price DESC",
+        "price_increase" => "ORDER BY price ASC",
+        "price_decrease" => "ORDER BY price DESC"
     ];
 
     // Base SQL query
-    $sql = "SELECT * FROM {$table} WHERE publish = 1";
+    $sql = "SELECT * FROM {$table} WHERE status = 1";
+
+    // Add category filter if provided
+    if ($category_id !== null) {
+        $sql .= " AND categories_id = :category_id";
+    }
 
     // Apply sorting if provided
     if ($sort_by && array_key_exists($sort_by, $allowedFilters)) {
@@ -180,6 +187,12 @@ function pag($table, $limit, $offset, $sort_by = null)
     $sql .= " LIMIT :limit OFFSET :offset";
 
     $query = $pdo->prepare($sql);
+
+    // Bind category parameter if needed
+    if ($category_id !== null) {
+        $query->bindParam(':category_id', $category_id, PDO::PARAM_INT);
+    }
+
     $query->bindParam(':limit', $limit, PDO::PARAM_INT);
     $query->bindParam(':offset', $offset, PDO::PARAM_INT);
     $query->execute();
@@ -257,6 +270,8 @@ function update($table, $id, $params){
 
     $stmt->execute();
 }
+
+
 
 
 
