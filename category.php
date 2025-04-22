@@ -25,7 +25,8 @@
 <body>
 
 <?php
-//tt($_POST);
+tt($_POST);
+tt($_GET);
 //tt($_SESSION);
 
 if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
@@ -80,8 +81,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
 <div class="page-category">
     <div class="container">
-        <form action="" method="POST" class="pc-filter">
-            <input type="hidden" name="order_by" value="">
+        <form action="" method="GET" class="pc-filter">
+            <input type="hidden" name="id_category" value="<?=$_GET['id_category']?>">
+
             <div class="pc-filter__top">
                 <div class="pc-filter__title">Фильтр</div>
                 <div class="pc-filter__icon">
@@ -90,11 +92,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
             </div>
             <div class="pc-filter-price">
                 <div class="pc-filter-price__inputs">
-                    <?php if (isset($_POST['price_from']) && $_POST['price_to']):?>
+                    <?php if (isset($_GET['price_from']) && $_GET['price_to']):?>
                     <input type="text" id="filter-price-slider-from" class="pc-filter-price__input"
-                           name="price_from" placeholder="от 0" value="<?=$_POST['price_from']?>">
+                           name="price_from" placeholder="от 0" value="<?=$_GET['price_from']?>">
                     <input type="text" id="filter-price-slider-to" class="pc-filter-price__input" name="price_to"
-                           placeholder="до 1999" value="<?=$_POST['price_to']?>">
+                           placeholder="до 1999" value="<?=$_GET['price_to']?>">
                     <?php else: ?>
                     <input type="text" id="filter-price-slider-from" class="pc-filter-price__input"
                            name="price_from" placeholder="от 0">
@@ -113,19 +115,32 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
                 </div>
                 <div class="pc-filter__item_cont">
                     <label class="pc-filter-checkbox">
-                        <input type="checkbox" class="pc-filter-checkbox__checkbox" name="filters[{{$f->id }}]">
+                        <input type="checkbox" class="pc-filter-checkbox__checkbox" name="Buba">
                         <div class="pc-filter-checkbox__box">
                             <i class="fa-solid fa-check"></i>
                         </div>
-                        <span class="pc-filter-checkbox__value">Мышка</span>
+                        <span class="pc-filter-checkbox__value">Mishel</span>
                     </label>
                     <label class="pc-filter-checkbox">
-                        <input type="checkbox" class="pc-filter-checkbox__checkbox" name="filters[{{$f->id }}]">
+                        <input type="checkbox" class="pc-filter-checkbox__checkbox" name="Buba">
                         <div class="pc-filter-checkbox__box">
                             <i class="fa-solid fa-check"></i>
                         </div>
-                        <span class="pc-filter-checkbox__value">Бубка</span>
+                        <span class="pc-filter-checkbox__value">Buba</span>
                     </label>
+                </div>
+            </div>
+            <div class="page-category__sort">
+                <div class="pc-select">
+                    <span class="pc-selector__title">Сортировка:</span>
+                    <select name="sort_by" class="pc-selector__val">
+                        <option value="">По умолчанию</option>
+                        <option value="price_increase" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] == 'price_increase') ? 'selected' : '' ?>>По возрастанию</option>
+                        <option value="price_decrease" <?= (isset($_GET['sort_by']) && $_GET['sort_by'] == 'price_decrease') ? 'selected' : '' ?>>По убыванию</option>
+                    </select>
+                </div>
+                <div class="pc-view">
+
                 </div>
             </div>
 
@@ -153,31 +168,33 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
 
             <div class="pc-filter__action">
-                <button class="pc-filter__btn">Применить</button>
-                <a href="{{ route('category', $data['category']->hash) }}" class="pc-filter__reset">Сбросить</a>
+                <button type="submit" name="filters" class="pc-filter__btn">Применить</button>
+                <a href="category.php?id_category=<?=$_GET['id_category']?>" class="pc-filter__reset">Сбросить</a>
             </div>
 
         </form>
         <div class="page-category-main">
             <div class="page-category__content">
-                <div class="page-category__sort">
-                    <div class="pc-select">
-                        <span class="pc-selector__title">Сортировка:</span>
-                        <select name="order_by" id="" class="pc-selector__val">
-                            <option value="">По умолчанию</option>
-                            <option value="price_increase" <?php if(isset($_POST['sort_by']) && $_POST['sort_by'] == 'price_increase'): ?> selected <?php endif; ?>>По возрастанию</option>
 
-                            <option value="price_decrease" <?php if(isset($_POST['sort_by']) && $_POST['sort_by'] == 'price_decrease'): ?> selected <?php endif; ?>>По убыванию</option>
-                        </select>
-                    </div>
-                    <div class="pc-view">
-
-                    </div>
-                </div>
                 <div class="page-category__products">
 
+                    <?php $products = select_all('products', ['categories_id'=>$_GET['id_category']]);
+//                    tt($products);
+                    $count = count($products);
 
-                    <?php $products = select_all('products', ['categories_id'=>$_GET['id_category']]);?>
+                    //если в $_GET['page'] уже есть число, то его и берем, а если нет - присваиваем 1
+                    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+                    $limit = 4;
+                    $offset = ($page - 1) * $limit;
+                    $total_pages = $count / $limit;
+                    $total_pages = ceil($total_pages);
+
+                    $sort_by = $_GET['sort_by'] ?? null;
+                    $price_from = $_GET['price_from'] ?? null;
+                    $price_to = $_GET['price_to'] ?? null;
+                    $products = pag('products', $limit, $offset, $sort_by, $_GET['id_category'], $price_from, $price_to);
+                    ?>
+
                     <?php foreach ($products as $product): ?>
                     <form action="" method="POST" class="mini-product">
                         <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
@@ -253,7 +270,50 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
                 </div>
             </div>
             <div class="page-category__pagination">
-                {{ $data['products']->links() }}
+                <?php
+                $current_page = max(1, min($total_pages, $page));
+                $range = 2; // Количество страниц до и после текущей
+                $current_page = max(1, min($total_pages, $current_page));
+                $start_page = max(1, $current_page - $range);
+                $end_page = min($total_pages, $current_page + $range);
+
+                // Сохраняем все GET-параметры, кроме page
+                $query_params = $_GET;
+                unset($query_params['page']);
+                $query_string = http_build_query($query_params);
+                ?>
+
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination">
+                        <li class="page-item <?= $current_page == 1 ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?<?= $query_string ?>&page=1">First</a>
+                        </li>
+                        <li class="page-item">
+                            <?php if($current_page != 1): ?>
+                                <a class="page-link" href="?<?= $query_string ?>&page=<?= $current_page - 1 ?>">Previous</a>
+                            <?php else:?>
+                                <p class="page-link">Previous</p>
+                            <?php endif;?>
+                        </li>
+
+                        <?php for ($i = $start_page; $i <= $end_page; $i++): ?>
+                            <li class="page-item <?= $i == $current_page ? 'active' : '' ?>">
+                                <a class="page-link" href="?<?= $query_string ?>&page=<?= $i ?>"><?= $i ?></a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <li class="page-item">
+                            <?php if($current_page != $total_pages): ?>
+                                <a class="page-link" href="?<?= $query_string ?>&page=<?= $current_page + 1 ?>">Next</a>
+                            <?php else:?>
+                                <p class="page-link">Next</p>
+                            <?php endif;?>
+                        </li>
+                        <li class="page-item <?= $current_page == $total_pages ? 'disabled' : '' ?>">
+                            <a class="page-link" href="?<?= $query_string ?>&page=<?= $total_pages ?>">Last</a>
+                        </li>
+                    </ul>
+                </nav>
             </div>
         </div>
     </div>
@@ -262,7 +322,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
 
 <?php include 'layouts/footer.php'; ?>
-
+<script src="https://cdn.jsdelivr.net/npm/jquery-ui-slider@1.12.1/jquery-ui.min.js"></script>
 <script>
 
     $(document).ready(function (){
@@ -271,7 +331,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
             range: true,
             min: 0,
             max: 1999,
-            values: [<?= isset($_POST['price_from']) ? $_POST['price_from'] : 0 ?>, <?= isset($_POST['price_to']) ? $_POST['price_to'] : 1999 ?>],
+            values: [<?= isset($_GET['price_from']) ? $_GET['price_from'] : 0 ?>, <?= isset($_GET['price_to']) ? $_GET['price_to'] : 1999 ?>],
             slide: function (event, ui) {
                 $("#filter-price-slider-from").val(ui.values[0]);
                 $("#filter-price-slider-to").val(ui.values[1]);

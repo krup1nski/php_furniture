@@ -157,15 +157,13 @@ function select_orders($phone){
 }
 
 //Pagination
-function pag($table, $limit, $offset, $sort_by = null, $category_id = null)
+function pag($table, $limit, $offset, $sort_by = null, $category_id = null, $price_from = null, $price_to = null)
 {
     global $pdo;
 
     // Allowed sorting filters
     $allowedFilters = [
         "name" => "ORDER BY name",
-        "asc_price" => "ORDER BY price ASC",
-        "desc_price" => "ORDER BY price DESC",
         "price_increase" => "ORDER BY price ASC",
         "price_decrease" => "ORDER BY price DESC"
     ];
@@ -176,6 +174,14 @@ function pag($table, $limit, $offset, $sort_by = null, $category_id = null)
     // Add category filter if provided
     if ($category_id !== null) {
         $sql .= " AND categories_id = :category_id";
+    }
+
+    // Add price range filters if provided
+    if ($price_from !== null) {
+        $sql .= " AND price >= :price_from";
+    }
+    if ($price_to !== null) {
+        $sql .= " AND price <= :price_to";
     }
 
     // Apply sorting if provided
@@ -193,12 +199,22 @@ function pag($table, $limit, $offset, $sort_by = null, $category_id = null)
         $query->bindParam(':category_id', $category_id, PDO::PARAM_INT);
     }
 
+    // Bind price parameters if needed
+    if ($price_from !== null) {
+        $query->bindParam(':price_from', $price_from, PDO::PARAM_INT);
+    }
+    if ($price_to !== null) {
+        $query->bindParam(':price_to', $price_to, PDO::PARAM_INT);
+    }
+
     $query->bindParam(':limit', $limit, PDO::PARAM_INT);
     $query->bindParam(':offset', $offset, PDO::PARAM_INT);
     $query->execute();
 
     return $query->fetchAll(PDO::FETCH_ASSOC);
 }
+
+
 
 function add_to_db($table, $params){
     global $pdo;
