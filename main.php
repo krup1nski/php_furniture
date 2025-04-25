@@ -42,10 +42,11 @@
             </div>
         </div>
         <div class="user-account flex-center">
-            <div class="user-account__icon">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <span class="user-account__text">Личный кабинет</span>
+<!--            <div class="user-account__icon">-->
+<!--                <i class="fa-solid fa-user"></i>-->
+<!--            </div>-->
+            <span class="user-account__text">Войти</span>
+            <span class="user-account__text">Регистрация</span>
         </div>
     </div>
 </div>

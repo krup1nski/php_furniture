@@ -1677,3 +1677,38 @@ body{
     display: grid;
     grid-template-columns: repeat(5, 1fr);
 }
+.user-account__text{
+    color: #fff;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+.log-form{
+    display: flex;
+    justify-content: center;
+    margin: 50px 0;
+    flex-direction: column;
+}
+.log-form__title{
+    text-align: center;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+
+.log-form__inputs{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-direction: column;
+    margin-bottom: 2%;
+    margin-top: 20px;
+}
+
+.log-form__inputs input{
+    height: 50px;
+    padding: 0 15px;
+    margin-top: 20px;
+    border: 1px solid var(--gray);
+    width: 49%;
+}

@@ -19,10 +19,17 @@
             </div>
         </div>
         <div class="user-account flex-center">
-            <div class="user-account__icon">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <span class="user-account__text">Личный кабинет</span>
+            <!--            <div class="user-account__icon">-->
+            <!--                <i class="fa-solid fa-user"></i>-->
+            <!--            </div>-->
+            <?php if(isset($_SESSION['name'])):?>
+                <span class="user-account__text"><?=$_SESSION['name']?></span>
+                <a href="logout.php" class="user-account__text">Выйти</a>
+            <?php else:?>
+                <a href="login.php" class="user-account__text">Войти</a>
+                <a href="registration.php" class="user-account__text">Регистрация</a>
+            <?php endif;?>
+
         </div>
     </div>
 </div>
