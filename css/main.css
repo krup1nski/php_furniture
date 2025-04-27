@@ -120,6 +120,68 @@ body{
     font-size: 14px;
     margin-top: 5px;
     font-weight: 600;
+    border: none;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.modal-container{
+    /*display: none;*/
+    background-color: rgba(0, 0, 0, 0.3);
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    z-index: 9;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-container.show{
+    pointer-events: auto;
+    opacity: 1;
+}
+
+.modal-inputs{
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+
+}
+.modal-inputs input, .modal-inputs textarea{
+    background-color: var(--gray-l);
+    border: 1px solid var(--gray);
+    padding: 15px 15px;
+    margin: 5px 0;
+}
+
+.modal{
+    background-color: var(--gray-l);
+    width: 600px;
+    max-width: 100%;
+    padding: 30px 50px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+
+.close_model{
+    position: absolute;
+    right: 5px;
+    top: 5px;
+}
+
+.modal h1{
+    margin: 0;
+}
+.modal p{
+    font-size: 14px;
+    opacity: 0.7;
 }
 
 .ml-action{

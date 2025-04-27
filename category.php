@@ -52,7 +52,15 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
 <?php include 'layouts/header.php'; ?>
 
-<?php $page_category = select_one('categories', $_GET['id_category']) ?>
+
+<?php
+if(isset($_GET['id_category'])){
+    $page_category = select_one('categories', $_GET['id_category']);
+}else{
+    $page_category['title'] = 'Все продукты';
+}
+
+?>
 
 
 <div class="breadcrumbs">
@@ -82,7 +90,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 <div class="page-category">
     <div class="container">
         <form action="" method="GET" class="pc-filter">
-            <input type="hidden" name="id_category" value="<?=$_GET['id_category']?>">
+            <?php if(isset($_GET['id_category'])): ?>
+                <input type="hidden" name="id_category" value="<?=$_GET['id_category']?>">
+            <?php else: ?>
+                <input type="hidden" name="id_category" value="">
+            <?php endif;?>
 
             <div class="pc-filter__top">
                 <div class="pc-filter__title">Фильтр</div>
@@ -169,7 +181,11 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
             <div class="pc-filter__action">
                 <button type="submit" name="filters" class="pc-filter__btn">Применить</button>
-                <a href="category.php?id_category=<?=$_GET['id_category']?>" class="pc-filter__reset">Сбросить</a>
+                <?php if(isset($_GET['id_category'])): ?>
+                    <a href="category.php?id_category=<?=$_GET['id_category']?>" class="pc-filter__reset">Сбросить</a>
+                <?php else: ?>
+                    <a href="category.php" class="pc-filter__reset">Сбросить</a>
+                <?php endif;?>
             </div>
 
         </form>
@@ -178,8 +194,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
                 <div class="page-category__products">
 
-                    <?php $products = select_all('products', ['categories_id'=>$_GET['id_category']]);
-//                    tt($products);
+                    <?php
+//
+                    if(isset($_GET['id_category'])){
+                        $products = select_all('products', ['categories_id'=>$_GET['id_category']]);
+                    }else{
+                        $products = select_all('products');
+                    }
+
                     $count = count($products);
 
                     //если в $_GET['page'] уже есть число, то его и берем, а если нет - присваиваем 1
@@ -192,7 +214,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
                     $sort_by = $_GET['sort_by'] ?? null;
                     $price_from = $_GET['price_from'] ?? null;
                     $price_to = $_GET['price_to'] ?? null;
-                    $products = pag('products', $limit, $offset, $sort_by, $_GET['id_category'], $price_from, $price_to);
+                    $id_category = $_GET['id_category'] ?? null;
+
+                    $products = pag('products', $limit, $offset, $sort_by, $id_category, $price_from, $price_to);
                     ?>
 
                     <?php foreach ($products as $product): ?>

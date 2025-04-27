@@ -38,18 +38,18 @@
         <a class="ml-logo" href="<?=BASE_URL?>home.php">
             <img src="<?=BASE_URL?>images\logo.png" alt="">
         </a>
-        <form action="" class="fast-search">
+        <form action="<?=BASE_URL?>search.php" method="get" class="fast-search">
             <div class="fast-search__input">
                 <input type="text" name="search" placeholder="Поиск товара">
-                <div class="fast-search__icon">
+                <button type="submit" class="fast-search__icon">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                </div>
+                </button>
             </div>
             <span class="fast-search__example">Например: Комод</span>
         </form>
         <div class="ml-callback">
             <a href="tel:+375441234567" class="ml-callback__phone">+375(44)12-34-567</a>
-            <a href="<?=BASE_URL?>layouts/clean_sess.php" class="ml-callback__call">Заказать звонок</a>
+            <button id="order_call" class="ml-callback__call">Заказать звонок</button>
         </div>
         <div class="ml-action flex-center">
             <div class="ml-action_cart">
@@ -86,6 +86,35 @@
             </div>
 
         </div>
+    </div>
+</div>
+
+<?php
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['modal_send'])){
+    $name = $_POST['name'];
+    $name = filter_var($name, FILTER_SANITIZE_STRING);
+    $phone = $_POST['phone'];
+    $phone = filter_var($phone, FILTER_SANITIZE_STRING);
+    $message = $_POST['message'];
+    $message = filter_var($message, FILTER_SANITIZE_STRING);
+
+    global $pdo;
+    $sql= $pdo->prepare("INSERT INTO `callback` (name, phone, message) VALUES (?,?,?)");
+    $sql->execute([$name, $phone, $message]);
+}
+?>
+
+<div class="modal-container" id="modal_container">
+    <div class="modal">
+        <h1>Заказать звонок</h1>
+        <form action="" method="post" class="modal-inputs">
+            <input type="text" name="name" placeholder="Ваше имя">
+            <input type="text" name="phone" placeholder="+375(__)___-__-__">
+            <textarea id="story" name="message" rows="5" cols="33" placeholder="Ваш вопрос"></textarea>
+
+            <button type="submit" name="modal_send" class="pcart-main-order__buy">Отправить</button>
+        </form>
+        <button id="close_modal" class="close_model">x</button>
     </div>
 </div>
 
@@ -190,5 +219,19 @@
             }
         });
 
+    });
+</script>
+
+<!--Modal-->
+<script>
+    const order_call = document.getElementById('order_call')
+    const modal_container = document.getElementById('modal_container')
+    const close_modal = document.getElementById('close_modal')
+
+    order_call.addEventListener('click', ()=> {
+        modal_container.classList.add('show');
+    });
+    close_modal.addEventListener('click', ()=> {
+        modal_container.classList.remove('show');
     });
 </script>

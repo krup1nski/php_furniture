@@ -70,7 +70,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                     $_SESSION['name'] = $row['fio'];
                     $_SESSION['phone'] = $row['phone'];
                 }
-                heade r( "location: home.php");
+                header( "location: home.php");
             }
         }
     }
