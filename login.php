@@ -70,6 +70,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         <form action="" method="post" class="log-form__inputs">
             <input type="text" name="phone" placeholder="+375 (__) ___-__-__" maxlength="50" required>
             <input type="password" name="pass" placeholder="Пароль" maxlength="50" required>
+            <div class="has_not_acc">
+                Нет аккаунта? <a href="registration.php">Зарегистрироваться</a>
+            </div>
             <button type="submit" name="login" class="pcart-main-order__buy">Принять</button>
         </form>
     </div>

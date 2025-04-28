@@ -260,7 +260,18 @@ if(isset($_GET['id_category'])){
                             <div class="mini-product__rating_icon">
                                 <i class="fa-solid fa-star"></i>
                             </div>
-                            <span class="mini-product__rating_text">4.7</span>
+                            <?php
+                            global $pdo;
+                            $sql = "SELECT AVG(rate) AS average_rate FROM feedback WHERE product_id = :product_id";
+                            $stmt = $pdo->prepare($sql);
+                            $stmt->bindParam(':product_id', $product['id']);
+                            $stmt->execute();
+                            $rate = $stmt->fetch();
+                            ?>
+
+                            <span class="mini-product__rating_text">
+                                <?php echo isset($rate['average_rate']) ? round($rate['average_rate'], 1) : 0; ?>
+                            </span>
                         </div>
                         <div class="mini-product__price">
                             <?php if(!empty($product['sale'])): ?>

@@ -1414,7 +1414,7 @@ body{
 }
 .pcart-main-order__buy{
     background-color: var(--accent);
-    margin-top: 50px;
+    margin-top: 20px;
     padding: 20px 45px;
     font-size: 15px;
     color: #fff;
@@ -1773,4 +1773,53 @@ body{
     margin-top: 20px;
     border: 1px solid var(--gray);
     width: 49%;
+}
+.has_not_acc{
+    margin-top: 20px;
+}
+
+/*------------ feedback ------------------*/
+.send_feedback_btn{
+    background-color: var(--accent);
+    margin: 20px 0;
+    padding: 20px 45px;
+    font-size: 15px;
+    color: #fff;
+    border: none;
+    outline: none;
+}
+
+.feedback{
+    width: 100%;
+    border: 1px solid var(--gray);
+    display: flex;
+    padding: 10px;
+}
+
+.feedback__icon img{
+    max-width: 80px;
+    max-height: 80px;
+}
+.feedback__details_up{
+    display: flex;
+    justify-content: space-between;
+}
+.feedback__details_up_name_rating{
+    display: flex;
+}
+.feedback__details_up_name{
+    font-size: 16px;
+    font-weight: 600;
+}
+.feedback__details_up_rating{
+    margin-left: 10px;
+}
+.feedback__details{
+    width: 100%;
+}
+.feedback_rates{
+    display: flex;
+}
+.feedback_rate{
+    margin-right: 15px;
 }

@@ -28,7 +28,7 @@
 <body>
 
 <?php
-//tt($_POST);
+tt($_POST);
 tt($_SESSION);
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
 
@@ -64,10 +64,86 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
 }
 ?>
 
+<?php
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['feedback_send'])) {
+    $user_id = filter_var($_POST['user_id'], FILTER_VALIDATE_INT);
+    $product_id = filter_var($_POST['product_id'], FILTER_VALIDATE_INT);
+    $rate = filter_var($_POST['rate'], FILTER_VALIDATE_INT, [
+        'options' => [
+            'min_range' => 1,
+            'max_range' => 5,
+        ],
+    ]);
+    $message = filter_var($_POST['message'], FILTER_SANITIZE_STRING);
+
+    global $pdo;
+    $sql = "INSERT INTO `feedback`(user_id, product_id, rate, message) VALUES(?, ?, ?, ?)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$user_id, $product_id, $rate, $message]);
+}
+?>
+
 <?php include 'layouts/header.php'; ?>
 
 <?php $product = select_one('products', $_GET['product_id']) ?>
 
+<?php
+global $pdo;
+$sql = "SELECT * FROM feedback WHERE product_id = :product_id";
+$stmt = $pdo->prepare($sql);
+$stmt->bindParam(':product_id', $product['id']);
+$stmt->execute();
+$feedbacks = $stmt->fetchAll();
+?>
+
+
+<!--Модальное окно для отправки отзыва-->
+<div class="modal-container" id="modal_container_feedback">
+    <div class="modal">
+        <h1>Оставить отзыв на <?= $product['title'] ?></h1>
+        <?php if(isset($_SESSION['user_id'])): ?>
+        <form action="" method="post" class="modal-inputs">
+            <input type="hidden" name="user_id" value="<?=$_SESSION['user_id']?>">
+            <input type="hidden" name="product_id" value="<?=$product['id']?>">
+            <fieldset class="feedback_rates">
+                <div class="feedback_rate">
+                    <input type="radio" id="1" name="rate" value="1" />
+                    <label for="louie">1</label>
+                </div>
+
+                <div class="feedback_rate">
+                    <input type="radio" id="2" name="rate" value="2" />
+                    <label for="2">2</label>
+                </div>
+
+                <div class="feedback_rate">
+                    <input type="radio" id="3" name="rate" value="3" />
+                    <label for="3">3</label>
+                </div>
+
+                <div class="feedback_rate">
+                    <input type="radio" id="4" name="rate" value="4" />
+                    <label for="4">4</label>
+                </div>
+
+                <div class="feedback_rate">
+                    <input type="radio" id="5" name="rate" value="5" />
+                    <label for="5">5</label>
+                </div>
+
+            </fieldset>
+            <textarea id="story" name="message" rows="5" cols="33" placeholder="Ваш отзыв"></textarea>
+
+            <button type="submit" name="feedback_send" class="pcart-main-order__buy">Отправить</button>
+        </form>
+        <?php else:?>
+        <p>Для того, чтобы оставить отзыв, вы должны войти в аккаунт:</p>
+            <a href="<?= BASE_URL ?>login.php">Войти</a>
+        <?php endif;?>
+
+        <button id="close_modal_feedback" class="close_model">x</button>
+    </div>
+</div>
 
 <div class="breadcrumbs">
     <div class="container">
@@ -122,11 +198,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
                             <div class="page-product-main-top__rating_icon">
                                 <i class="fa-regular fa-star"></i>
                             </div>
-                            <span class="page-product-main-top__rating_text">
-                                4.7
+                            <?php
+                            $sql = "SELECT AVG(rate) AS average_rate FROM feedback WHERE product_id = :product_id";
+                            $stmt = $pdo->prepare($sql);
+                            $stmt->bindParam(':product_id', $product['id']);
+                            $stmt->execute();
+                            $rate = $stmt->fetch();
+                            ?>
+                            <span class="mini-product__rating_text">
+                                <?php echo isset($rate['average_rate']) ? round($rate['average_rate'], 1) : 0; ?>
+                            </span>
                             </span>
                         </div>
-                        <div class="page-product-main-top__link">12 отзывов</div>
+                        <div class="page-product-main-top__link"><?=count($feedbacks)?> отзывов</div>
                     </div>
                     <div class="page-product-main-top__actions">
                         <div class=page-product-main-top__actions_compare">
@@ -289,21 +373,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
                 <div class="page-product-info__content_tab active" data-tab="1"><?= $product['description'] ?></div>
                 <div class="page-product-info__content_tab" data-tab="2">
                     <div class="page-product-filters">
-                        @foreach($product->filters as $filter)
-                        <div class="page-product-filters__item">
-                            <span class="key">{{ $filters_group->find($filter->group_id)->title }}</span>
-                            <span class="value">{{ $filter->title}}</span>
-                        </div>
-                        @endforeach
+                        Характеристики
                     </div>
                 </div>
-                <div class="page-product-info__content_tab" data-tab="3">Отзывы о товаре</div>
+                <div class="page-product-info__content_tab" data-tab="3">
+                    <div class="feedbacks">
+                        <div class="feedback_btn">
+                            <button id="feedback_btn_send" class="send_feedback_btn">Оставить отзыв</button>
+                        </div>
+                        <div class="all_feedbacks">
+
+                            <?php if(!empty($feedbacks)): ?>
+                                <?php foreach ($feedbacks as $feedback): ?>
+                                    <div class="feedback">
+                                        <div class="feedback__icon">
+                                            <img src="https://media.istockphoto.com/id/1451587807/vector/user-profile-icon-vector-avatar-or-person-icon-profile-picture-portrait-symbol-vector.jpg?s=612x612&w=0&k=20&c=yDJ4ITX1cHMh25Lt1vI1zBn2cAKKAlByHBvPJ8gEiIg=" alt="">
+                                        </div>
+                                        <div class="feedback__details">
+                                            <div class="feedback__details_up">
+                                                <div class="feedback__details_up_name_rating">
+                                                    <div class="feedback__details_up_name">
+                                                        Alex
+                                                    </div>
+                                                    <div class="feedback__details_up_rating"><?=$feedback['rate']?></div>
+                                                </div>
+                                                <div class="feedback__details_up_date">
+                                                    <?php
+                                                    $originalDate = $feedback['created_at'];
+                                                    $dateObject = DateTime::createFromFormat('Y-m-d H:i:s', $originalDate);
+                                                    $formattedDate = $dateObject->format('d/m/Y');
+                                                    ?>
+                                                    <?=$formattedDate?>
+                                                </div>
+                                            </div>
+                                            <div class="feedback__details_message">
+                                                <p><?=$feedback['message']?></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php else:?>
+                            <p>Отзывов пока нет :(</p>
+                            <?php endif;?>
+                        </div>
+                    </div>
+
+                </div>
                 <div class="page-product-info__content_tab" data-tab="4">Гарантия</div>
             </div>
         </div>
     </div>
-
 </div>
+
+
+
 
 <?php include 'layouts/footer.php'; ?>
 
@@ -333,6 +456,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
             }
         })
 
+        //Описание-Характеристики-Отзывы-Гарантия
+        $('.page-product-info__tabs_item').on('click', function (e){
+            e.preventDefault()
+            $('.page-product-info__tabs_item').removeClass('active')
+            $('.page-product-info__content_tab').removeClass('active')
+            $(this).addClass('active')
+            $('.page-product-info__content_tab[data-tab="' + $(this).attr('data-tab') + '"]').addClass('active')
+        })
+
         //выбор цвета
 
         $('.page-product-main-options__item').on('click', function () {
@@ -358,6 +490,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
         pagination: {
             el: '.swiper-wrapper-pagination',
         },
+    });
+</script>
+
+<!--Modal-->
+<script>
+    const feedback_btn_send = document.getElementById('feedback_btn_send')
+    const modal_container_feedback = document.getElementById('modal_container_feedback')
+    const close_modal_feedback = document.getElementById('close_modal_feedback')
+
+    feedback_btn_send.addEventListener('click', ()=> {
+        modal_container_feedback.classList.add('show');
+    });
+    close_modal_feedback.addEventListener('click', ()=> {
+        modal_container_feedback.classList.remove('show');
     });
 </script>
 

@@ -166,6 +166,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['modal_send'])){
 
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!--Notification-->
 <script>
     window.addNotification = (title, link) => {
         let time = Date.now()
