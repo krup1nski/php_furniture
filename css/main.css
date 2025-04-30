@@ -1745,6 +1745,12 @@ body{
     margin-left: 10px;
 }
 
+.user-account__text a{
+    color: #fff;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
 .log-form{
     display: flex;
     justify-content: center;
@@ -1823,3 +1829,50 @@ body{
 .feedback_rate{
     margin-right: 15px;
 }
+
+
+/*------------ profile_image ------------*/
+
+.profile_avatar{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile_image img{
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+#file-path{
+    display: none;
+}
+
+.profile_avatar h2{
+    margin-bottom: 20px;
+}
+
+.profile_image{
+    position: relative;
+}
+
+.profile_image label{
+    position: absolute;
+    top: 10px;
+    right: 13px;
+    color: #fff;
+    background-color: var(--accent);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+}
+

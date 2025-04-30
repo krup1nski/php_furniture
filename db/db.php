@@ -4,6 +4,7 @@ session_start();
 require "connection.php";
 define("BASE_URL", "/furniture/");
 
+
 // для удобного чтения
 function tt($value)
 {

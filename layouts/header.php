@@ -23,7 +23,9 @@
             <!--                <i class="fa-solid fa-user"></i>-->
             <!--            </div>-->
             <?php if(isset($_SESSION['name'])):?>
-                <span class="user-account__text"><?=$_SESSION['name']?></span>
+                <span class="user-account__text">
+                    <a href="<?= BASE_URL ?>profile.php"><?= $_SESSION['name'] ?></a>
+                </span>
                 <a href="logout.php" class="user-account__text">Выйти</a>
             <?php else:?>
                 <a href="login.php" class="user-account__text">Войти</a>
