@@ -27,69 +27,70 @@
 <?php tt($_POST)?>
 <?php
 if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
-    $fio = $_POST["name"];
-    $phone = $_POST["phone"];
-    $email = $_POST["email"];
-    $delivery_type = $_POST["delivery"];
-    $comment = $_POST["comment"];
-    $status = 'created';
-    $price = $_POST["total_price"];
 
-
-    global $pdo;
-    $insert_order = "INSERT INTO `orders`(fio, phone, email, delivery_type, comment, status, price) VALUES (?,?,?,?,?,?,?)";
-    $stmt = $pdo->prepare($insert_order);
-    $stmt->execute([$fio, $phone, $email, $delivery_type, $comment, $status, $price]);
-
-    $order_id = $pdo->lastInsertId();
-    // 2. Добавляем товары из корзины
-    if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-        foreach($_SESSION['cart'] as $item) {
-            $insert_product = "INSERT INTO `order_products`
-                                 (order_id, product_id, count, price)
-                                 VALUES (?, ?, ?, ?)";
-            $stmt = $pdo->prepare($insert_product);
-            $stmt->execute([
-                $order_id,
-                $item['id'],
-                $item['count'],
-                $item['price']
-            ]);
-
-            // 3. Добавляем options в бд
-            foreach($item['options'] as $key => $option_item) {
-                tt($key);
-                tt($option_item);
-                $option_id = explode("__", $option_item);
-                tt($option_id);
-                $insert_product = "INSERT INTO `order_product_options`
-                                 (order_id, product_id, option_id)
-                                 VALUES (?, ?, ?)";
-                $stmt = $pdo->prepare($insert_product);
-                $stmt->execute([
-                    $order_id,
-                    $item['id'],
-                    $option_id[0]
-                ]);
-            }
-
-            // 4. Добавляем accessories в бд
-            foreach($item['accessories'] as $key => $access_item) {
-                $insert_product = "INSERT INTO `order_product_accessories`
-                                 (order_id, product_id, accessory_id)
-                                 VALUES (?, ?, ?)";
-                $stmt = $pdo->prepare($insert_product);
-                $stmt->execute([
-                    $order_id,
-                    $item['id'],
-                    $access_item
-                ]);
-            }
-        }
-    }
-
-    unset($_SESSION['cart']);
-    header("Location: thanks.php?order_id={$order_id}");
+//    $fio = $_POST["name"];
+//    $phone = $_POST["phone"];
+//    $email = $_POST["email"];
+//    $delivery_type = $_POST["delivery"];
+//    $comment = $_POST["comment"];
+//    $status = 'created';
+//    $price = $_POST["total_price"];
+//
+//
+//    global $pdo;
+//    $insert_order = "INSERT INTO `orders`(fio, phone, email, delivery_type, comment, status, price) VALUES (?,?,?,?,?,?,?)";
+//    $stmt = $pdo->prepare($insert_order);
+//    $stmt->execute([$fio, $phone, $email, $delivery_type, $comment, $status, $price]);
+//
+//    $order_id = $pdo->lastInsertId();
+//    // 2. Добавляем товары из корзины
+//    if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+//        foreach($_SESSION['cart'] as $item) {
+//            $insert_product = "INSERT INTO `order_products`
+//                                 (order_id, product_id, count, price)
+//                                 VALUES (?, ?, ?, ?)";
+//            $stmt = $pdo->prepare($insert_product);
+//            $stmt->execute([
+//                $order_id,
+//                $item['id'],
+//                $item['count'],
+//                $item['price']
+//            ]);
+//
+//            // 3. Добавляем options в бд
+//            foreach($item['options'] as $key => $option_item) {
+//                tt($key);
+//                tt($option_item);
+//                $option_id = explode("__", $option_item);
+//                tt($option_id);
+//                $insert_product = "INSERT INTO `order_product_options`
+//                                 (order_id, product_id, option_id)
+//                                 VALUES (?, ?, ?)";
+//                $stmt = $pdo->prepare($insert_product);
+//                $stmt->execute([
+//                    $order_id,
+//                    $item['id'],
+//                    $option_id[0]
+//                ]);
+//            }
+//
+//            // 4. Добавляем accessories в бд
+//            foreach($item['accessories'] as $key => $access_item) {
+//                $insert_product = "INSERT INTO `order_product_accessories`
+//                                 (order_id, product_id, accessory_id)
+//                                 VALUES (?, ?, ?)";
+//                $stmt = $pdo->prepare($insert_product);
+//                $stmt->execute([
+//                    $order_id,
+//                    $item['id'],
+//                    $access_item
+//                ]);
+//            }
+//        }
+//    }
+//
+//    unset($_SESSION['cart']);
+//    header("Location: thanks.php?order_id={$order_id}");
 }
 ?>
 
@@ -158,7 +159,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
                                     <?php foreach ($product['accessories'] as $key => $value): ?>
                                         <?php
                                         global $pdo;
-                                        $id = (int)$value; // Приводим к числу (если ID — integer)
+                                        $id = (int)$value;
                                         $sql = "SELECT * FROM `accessories` WHERE `id` = ?";
                                         $stmt = $pdo->prepare($sql);
                                         $stmt->execute([$id]);
@@ -178,6 +179,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
                                     <?php $total_accessories_price += $accessory['price'];?>
                                     <?php endforeach;?>
                                 <?php endif;?>
+                                <?=$total_accessories_price?>
 
                             </div>
                             <div class="page-cart-product-list-item__count">
@@ -300,12 +302,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
                     </div>
                     <div class="pcart-main-order__info-item result-product-itog">
                         <div class="pcart-main-order__info-item_title">К оплате:</div>
-                        <input type="hidden" name="total_price" value="<?=$total_order_price?>">
                         <?php if(isset($result['discount'])):?>
                             <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total_order_price = ceil($total_order_price - ($total_order_price / 100 * $result['discount']))?></span> byn</div>
                         <?php else: ?>
                             <div class="pcart-main-order__info-item_val result"><span class="num"><?=$total_order_price?></span> byn</div>
                         <?php endif;?>
+                        <input type="hidden" name="total_price" value="<?=$total_order_price?>">
                     </div>
                     <div class="pcart-main-order__buy-wrap">
                         <button type="submit" name="make_order" class="pcart-main-order__buy">Оформить заказ</button>
