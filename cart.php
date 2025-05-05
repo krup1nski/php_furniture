@@ -24,73 +24,92 @@
 </head>
 <body>
 
-<?php tt($_POST)?>
+
 <?php
 if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
 
-//    $fio = $_POST["name"];
-//    $phone = $_POST["phone"];
-//    $email = $_POST["email"];
-//    $delivery_type = $_POST["delivery"];
-//    $comment = $_POST["comment"];
-//    $status = 'created';
-//    $price = $_POST["total_price"];
-//
-//
-//    global $pdo;
-//    $insert_order = "INSERT INTO `orders`(fio, phone, email, delivery_type, comment, status, price) VALUES (?,?,?,?,?,?,?)";
-//    $stmt = $pdo->prepare($insert_order);
-//    $stmt->execute([$fio, $phone, $email, $delivery_type, $comment, $status, $price]);
-//
-//    $order_id = $pdo->lastInsertId();
-//    // 2. Добавляем товары из корзины
-//    if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-//        foreach($_SESSION['cart'] as $item) {
-//            $insert_product = "INSERT INTO `order_products`
-//                                 (order_id, product_id, count, price)
-//                                 VALUES (?, ?, ?, ?)";
-//            $stmt = $pdo->prepare($insert_product);
-//            $stmt->execute([
-//                $order_id,
-//                $item['id'],
-//                $item['count'],
-//                $item['price']
-//            ]);
-//
-//            // 3. Добавляем options в бд
-//            foreach($item['options'] as $key => $option_item) {
-//                tt($key);
-//                tt($option_item);
-//                $option_id = explode("__", $option_item);
-//                tt($option_id);
-//                $insert_product = "INSERT INTO `order_product_options`
-//                                 (order_id, product_id, option_id)
-//                                 VALUES (?, ?, ?)";
-//                $stmt = $pdo->prepare($insert_product);
-//                $stmt->execute([
-//                    $order_id,
-//                    $item['id'],
-//                    $option_id[0]
-//                ]);
-//            }
-//
-//            // 4. Добавляем accessories в бд
-//            foreach($item['accessories'] as $key => $access_item) {
-//                $insert_product = "INSERT INTO `order_product_accessories`
-//                                 (order_id, product_id, accessory_id)
-//                                 VALUES (?, ?, ?)";
-//                $stmt = $pdo->prepare($insert_product);
-//                $stmt->execute([
-//                    $order_id,
-//                    $item['id'],
-//                    $access_item
-//                ]);
-//            }
-//        }
-//    }
-//
-//    unset($_SESSION['cart']);
-//    header("Location: thanks.php?order_id={$order_id}");
+    $fio = trim($_POST["name"]);
+    $phone = trim($_POST["phone"]);
+    $email = filter_var(trim($_POST["email"]), FILTER_VALIDATE_EMAIL);
+    $delivery_type = (int)$_POST["delivery"];
+    $comment = trim($_POST["comment"]);
+    $status = 'created';
+    $price = trim($_POST["total_price"]);
+
+
+    global $pdo;
+    $insert_order = "INSERT INTO `orders`(fio, phone, email, delivery_type, comment, status, price) VALUES (?,?,?,?,?,?,?)";
+    $stmt = $pdo->prepare($insert_order);
+    $stmt->execute([$fio, $phone, $email, $delivery_type, $comment, $status, $price]);
+
+    $order_id = $pdo->lastInsertId();
+    // 2. Добавляем товары из корзины
+    if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+        foreach($_SESSION['cart'] as $item) {
+            $insert_product = "INSERT INTO `order_products`
+                                 (order_id, product_id, count, price)
+                                 VALUES (?, ?, ?, ?)";
+            $stmt = $pdo->prepare($insert_product);
+            $stmt->execute([
+                $order_id,
+                $item['id'],
+                $item['count'],
+                $item['price']
+            ]);
+
+            // 3. Добавляем options в бд
+            foreach($item['options'] as $key => $option_item) {
+                tt($key);
+                tt($option_item);
+                $option_id = explode("__", $option_item);
+                tt($option_id);
+                $insert_product = "INSERT INTO `order_product_options`
+                                 (order_id, product_id, option_id)
+                                 VALUES (?, ?, ?)";
+                $stmt = $pdo->prepare($insert_product);
+                $stmt->execute([
+                    $order_id,
+                    $item['id'],
+                    $option_id[0]
+                ]);
+            }
+
+            // 4. Добавляем accessories в бд
+            foreach($item['accessories'] as $key => $access_item) {
+                $insert_product = "INSERT INTO `order_product_accessories`
+                                 (order_id, product_id, accessory_id)
+                                 VALUES (?, ?, ?)";
+                $stmt = $pdo->prepare($insert_product);
+                $stmt->execute([
+                    $order_id,
+                    $item['id'],
+                    $access_item
+                ]);
+            }
+        }
+    }
+
+    unset($_SESSION['cart']);
+    header("Location: thanks.php?order_id={$order_id}");
+}
+?>
+
+<?php
+// Обработка изменения количества товаров
+if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["product_id"])){
+    $product_id = $_POST["product_id"];
+
+    if(isset($_POST["action"])) {
+        if($_POST["action"] == "plus" && isset($_SESSION['cart'][$product_id])) {
+            $_SESSION['cart'][$product_id]['count'] += 1;
+        }
+        elseif ($_POST["action"] == "minus" && isset($_SESSION['cart'][$product_id]) && $_SESSION['cart'][$product_id]['count'] > 1) {
+            $_SESSION['cart'][$product_id]['count'] -= 1;
+        }
+
+        header("Location: ".$_SERVER['PHP_SELF']);
+        exit();
+    }
 }
 ?>
 
@@ -133,85 +152,91 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
 
                     <?php $total_order_price = 0; ?>
 
+                    <?php if(isset($_SESSION['cart']) && !empty($_SESSION['cart'])): ?>
                     <?php foreach ($_SESSION['cart'] as $sess_name => $product): ?>
-                    <div class="page-cart-product-list-item">
-                        <div class="page-cart-product-list-item__info_wrap">
-                            <div class="page-cart-product-list-item__img">
-                                <img src="<?=$product['image_path']?>" alt="">
-                            </div>
-                            <div class="page-cart-product-list-item__info">
-                                <a href="product.php?product_id=<?=$product['id']?>" class="mini-product__title"><?=$product['title']?></a>
+                    <form method="post" action="">
+                        <div class="page-cart-product-list-item">
+                            <div class="page-cart-product-list-item__info_wrap">
+                                <div class="page-cart-product-list-item__img">
+                                    <img src="<?=$product['image_path']?>" alt="">
+                                </div>
+                                <div class="page-cart-product-list-item__info">
+                                    <a href="product.php?product_id=<?=$product['id']?>" class="mini-product__title"><?=$product['title']?></a>
 
-                                <?php if(!empty($product['options'])):?>
-                                    <?php foreach ($product['options'] as $key => $value): ?>
-                                        <?php if($value):?>
-                                            <?php $pieces = explode("__", $value);?>
-                                            <div class="page-cart-product-list-item_options"><?=$pieces[1]?></div>
-                                        <?php endif;?>
-                                    <?php endforeach;?>
-                                <?php endif;?>
+                                    <?php if(!empty($product['options'])):?>
+                                        <?php foreach ($product['options'] as $key => $value): ?>
+                                            <?php if($value):?>
+                                                <?php $pieces = explode("__", $value);?>
+                                                <div class="page-cart-product-list-item_options"><?=$pieces[1]?></div>
+                                            <?php endif;?>
+                                        <?php endforeach;?>
+                                    <?php endif;?>
 
 
 
-                                <?php $total_accessories_price =  0;?>
+                                    <?php $total_accessories_price =  0;?>
 
-                                <?php if(!empty($product['accessories'])):?>
-                                    <?php foreach ($product['accessories'] as $key => $value): ?>
-                                        <?php
-                                        global $pdo;
-                                        $id = (int)$value;
-                                        $sql = "SELECT * FROM `accessories` WHERE `id` = ?";
-                                        $stmt = $pdo->prepare($sql);
-                                        $stmt->execute([$id]);
-                                        $accessory = $stmt->fetch();
-                                        ?>
-                                        <div class="page-cart-product-list-item_accessories cart-accessories">
-                                            <div class="cart-accessories__item">
-                                                <div class="cart-accessories__img">
-                                                    <img src="<?=$accessory['image']?>" alt="">
-                                                </div>
-                                                <div class="cart-accessories__info">
-                                                    <div class="cart-accessories__title"><?=$accessory['name']?></div>
-                                                    <div class="cart-accessories__price"><?=$accessory['price']?> byn</div>
+                                    <?php if(!empty($product['accessories'])):?>
+                                        <?php foreach ($product['accessories'] as $key => $value): ?>
+                                            <?php
+                                            global $pdo;
+                                            $id = (int)$value;
+                                            $sql = "SELECT * FROM `accessories` WHERE `id` = ?";
+                                            $stmt = $pdo->prepare($sql);
+                                            $stmt->execute([$id]);
+                                            $accessory = $stmt->fetch();
+                                            ?>
+                                            <div class="page-cart-product-list-item_accessories cart-accessories">
+                                                <div class="cart-accessories__item">
+                                                    <div class="cart-accessories__img">
+                                                        <img src="<?=$accessory['image']?>" alt="">
+                                                    </div>
+                                                    <div class="cart-accessories__info">
+                                                        <div class="cart-accessories__title"><?=$accessory['name']?></div>
+                                                        <div class="cart-accessories__price"><?=$accessory['price']?> byn</div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    <?php $total_accessories_price += $accessory['price'];?>
-                                    <?php endforeach;?>
-                                <?php endif;?>
-                                <?=$total_accessories_price?>
+                                        <?php $total_accessories_price += $accessory['price'];?>
+                                        <?php endforeach;?>
+                                    <?php endif;?>
 
-                            </div>
-                            <div class="page-cart-product-list-item__count">
-                                <span class="page-cart-product-list-item__count_minus">-</span>
-                                <input type="text" name="count" value="<?=$product['count']?>">
-                                <span class="page-cart-product-list-item__count_plus">+</span>
-                            </div>
-                            <div class="page-cart-product-list-item__price">
-
-                                <?php if($product['sale']): ?>
-                                <div class="page-cart-product__price_main">
-                                    <span class="page-cart-product__price_old"><?=$product['price']?> BYN</span>
-                                    <div class="page-cart-product__price_sale-count">-<?=$product['sale']?>%</div>
                                 </div>
-                                <span class="page-cart-product__price_current"><span class="price"><?= $total_accessories_price + ceil($product['price'] - ($product['price'] * $product['sale'] / 100)) ?></span> BYN</span>
-                                <?php $total_order_price += $product['count'] * ($total_accessories_price + ceil($product['price'] - ($product['price'] * $product['sale'] / 100)))?>
-                                <?php else: ?>
-                                <div class="page-cart-product__price_main">
-                                    <span class="page-cart-product__price_current"><span class="price"><?=$total_accessories_price + $product['price']?></span> BYN</span>
-                                    <?php $total_order_price += ($product['count'] * $total_accessories_price + $product['price'])?>
+                                <div class="page-cart-product-list-item__count">
+                                    <form method="post" action="">
+                                        <input type="hidden" name="product_id" value="<?=$sess_name?>">
+                                        <button type="submit" name="action" value="minus" class="page-cart-product-list-item__count_minus">-</button>
+                                        <input type="text" name="count" value="<?=$product['count']?>" readonly>
+                                        <button type="submit" name="action" value="plus" class="page-cart-product-list-item__count_plus">+</button>
+                                    </form>
                                 </div>
-                                <?php endif; ?>
+                                <div class="page-cart-product-list-item__price">
 
-                            </div>
-                            <div class="page-cart-product-list-item__remove">
-                                <a href="<?= BASE_URL ?>delete.php?session_del_id=<?=$sess_name?>">
-                                <i class="fa-solid fa-xmark"></i></a>
+                                    <?php if($product['sale']): ?>
+                                    <div class="page-cart-product__price_main">
+                                        <span class="page-cart-product__price_old"><?=$product['price']?> BYN</span>
+                                        <div class="page-cart-product__price_sale-count">-<?=$product['sale']?>%</div>
+                                    </div>
+                                    <span class="page-cart-product__price_current"><span class="price"><?= $total_accessories_price + ceil($product['price'] - ($product['price'] * $product['sale'] / 100)) ?></span> BYN</span>
+                                    <?php $total_order_price += $product['count'] * ($total_accessories_price + ceil($product['price'] - ($product['price'] * $product['sale'] / 100)))?>
+                                    <?php else: ?>
+                                    <div class="page-cart-product__price_main">
+                                        <span class="page-cart-product__price_current"><span class="price"><?=$total_accessories_price + $product['price']?></span> BYN</span>
+                                        <?php $total_order_price += ($product['count'] * $total_accessories_price + $product['price'])?>
+                                    </div>
+                                    <?php endif; ?>
+
+                                </div>
+                                <div class="page-cart-product-list-item__remove">
+                                    <a href="<?= BASE_URL ?>delete.php?session_del_id=<?=$sess_name?>">
+                                    <i class="fa-solid fa-xmark"></i></a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <?php endforeach;?>
+                        <?php endforeach;?>
+                    <?php else:?>
+                    <p>Корзина пуста</p>
+                    <?php endif;?>
 
                 </div>
                 <div class="pcart-main-contact">
@@ -270,15 +295,21 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
 
 
             <?php
-//            tt($_POST);
             $promo = '';
+            $promo_discount = 0;
             if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['promo'])){
-                $promo = $_POST['code'];
-                global $pdo;
-                $sql = "SELECT * FROM `promo_codes` WHERE code = '$promo'";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute();
-                $result = $stmt->fetch();
+                $promo = trim($_POST['code']);
+                if(!empty($promo)) {
+                    global $pdo;
+                    $sql = "SELECT * FROM `promo_codes` WHERE code = ?";
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute([$promo]);
+                    $result = $stmt->fetch();
+
+                    if($result) {
+                        $promo_discount = $result['discount'];
+                    }
+                }
             }
             ?>
 

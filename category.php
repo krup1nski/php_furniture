@@ -25,14 +25,10 @@
 <body>
 
 <?php
-tt($_POST);
-tt($_GET);
-//tt($_SESSION);
-
 if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
     if(isset($_SESSION['cart']['product_'.$_POST['product_article']])){
-        echo "<script>alert('Товар уже в корзине!');</script>";
+        $warning_msg[] = "Товар уже карзине";
     }else{
         $_SESSION['cart']['product_'.$_POST['product_article']] = [
             'id' => $_POST['product_id'],
@@ -44,10 +40,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
             'options' => [],
             'accessories' => [],
         ];
-        echo "<script>alert('Товар добавлен!');</script>";
+        $success_msg[] = "Товар добавлен в карзину";
     }
 }
-
 ?>
 
 <?php include 'layouts/header.php'; ?>
@@ -374,6 +369,9 @@ if(isset($_GET['id_category'])){
         });
     });
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+<?php include "layouts/alert.php";?>
 
 </body>
 </html>

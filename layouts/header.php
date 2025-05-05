@@ -103,6 +103,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['modal_send'])){
     global $pdo;
     $sql= $pdo->prepare("INSERT INTO `callback` (name, phone, message) VALUES (?,?,?)");
     $sql->execute([$name, $phone, $message]);
+
+    $success_msg[] = "Сообщение отправлено!";
 }
 ?>
 
@@ -239,3 +241,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['modal_send'])){
         modal_container.classList.remove('show');
     });
 </script>
+
+<!--Alert-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/2.1.2/sweetalert.min.js"></script>
+<?php include "layouts/alert.php";?>

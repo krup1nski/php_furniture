@@ -1150,6 +1150,7 @@ body{
 
 /*----------------Product----------------*/
 .page-cart{
+    margin-top: 20px;
     margin-bottom: 80px;
 }
 .page-cart .container{
@@ -1252,6 +1253,8 @@ body{
     transform: translateY(-50%);
     color: var(--gray-d);
     cursor: pointer;
+    border: none;
+    background-color: #fff;
 }
 .page-cart-product-list-item__count_minus{
     position: absolute;
@@ -1260,7 +1263,10 @@ body{
     transform: translateY(-50%);
     color: var(--gray-d);
     cursor: pointer;
+    border: none;
+    background-color: #fff;
 }
+
 .page-cart-product-list-item__price{
     font-size: 18px;
     font-weight: 600;

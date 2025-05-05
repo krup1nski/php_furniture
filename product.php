@@ -28,8 +28,6 @@
 <body>
 
 <?php
-tt($_POST);
-tt($_SESSION);
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
 
     // Создаем уникальный ключ для корзины с учетом артикула, цвета и размера
@@ -41,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
 
 // Проверяем наличие товара в корзине
     if (isset($_SESSION['cart'][$productKey])) {
-        echo "<script>alert('Товар уже в корзине!');</script>";
+        $warning_msg[] = "Товар уже карзине";
     } else {
         // Добавляем товар в корзину
         $_SESSION['cart'][$productKey] = [
@@ -57,10 +55,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])) {
             ],
             'accessories' => isset($_POST['accessories']) ? $_POST['accessories'] : '',
         ];
-
-        echo "<script>alert('Товар успешно добавлен в корзину!');</script>";
+        $success_msg[] = "Товар добавлен в карзину";
     }
-
 }
 ?>
 
@@ -506,6 +502,8 @@ $feedbacks = $stmt->fetchAll();
         modal_container_feedback.classList.remove('show');
     });
 </script>
+
+
 
 </body>
 </html>

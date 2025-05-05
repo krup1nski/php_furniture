@@ -28,11 +28,10 @@
 <body>
 
 <?php
-//tt($_SESSION);
 if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
 
     if(isset($_SESSION['cart']['product_'.$_POST['product_article']])){
-        echo "<script>alert('Товар уже в корзине!');</script>";
+        $warning_msg[] = "Товар уже карзине";
     }else{
         $_SESSION['cart']['product_'.$_POST['product_article']] = [
             'id' => $_POST['product_id'],
@@ -44,7 +43,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
             'options' => [],
             'accessories' => [],
         ];
-        echo "<script>alert('Товар добавлен!');</script>";
+        $success_msg[] = "Товар добавлен в карзину";
     }
 }
 ?>
@@ -268,6 +267,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['product_article'])){
         },
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 </body>
 </html>
