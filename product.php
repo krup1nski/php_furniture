@@ -391,7 +391,7 @@ $feedbacks = $stmt->fetchAll();
                                                     <div class="feedback__details_up_name">
                                                         Alex
                                                     </div>
-                                                    <div class="feedback__details_up_rating"><?=$feedback['rate']?></div>
+                                                    <div class="feedback__details_up_rating"><?=$feedback['rate']?><i class="fa-solid fa-star"></i></div>
                                                 </div>
                                                 <div class="feedback__details_up_date">
                                                     <?php

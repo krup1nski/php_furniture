@@ -1826,6 +1826,9 @@ body{
 .feedback__details_up_rating{
     margin-left: 10px;
 }
+.feedback__details_up_rating i{
+    color: #ffc400;
+}
 .feedback__details{
     width: 100%;
 }

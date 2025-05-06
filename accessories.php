@@ -64,7 +64,7 @@
                 </div>
                 <div class="page-accessories__item_info">
                     <div class="page-accessories__item_title"><?=$accessory['name']?></div>
-                    <div class="page-accessories__item_price"><?=$accessory['price']?></div>
+                    <div class="page-accessories__item_price"><?=$accessory['price']?> BYN</div>
                 </div>
             </div>
             <?php endforeach; ?>

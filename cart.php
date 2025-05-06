@@ -59,10 +59,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["make_order"])){
 
             // 3. Добавляем options в бд
             foreach($item['options'] as $key => $option_item) {
-                tt($key);
-                tt($option_item);
                 $option_id = explode("__", $option_item);
-                tt($option_id);
                 $insert_product = "INSERT INTO `order_product_options`
                                  (order_id, product_id, option_id)
                                  VALUES (?, ?, ?)";

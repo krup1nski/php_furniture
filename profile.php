@@ -27,9 +27,8 @@
 </head>
 <body>
 
-<?php
-tt($_SESSION);
 
+<?php
 global $pdo;
 $sql = "SELECT * FROM users WHERE id = :user_id";
 $stmt = $pdo->prepare($sql);
@@ -96,6 +95,20 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         $errorMessage = "Файл не был отправлен через форму";
     }
     header("Location: profile.php");
+
+    if(isset($_POST['profile_update'])){
+        $fio = trim($_POST["name"]);
+        $email = filter_var(trim($_POST["email"]), FILTER_VALIDATE_EMAIL);
+        $address = trim($_POST["address"]);
+
+        $sql = "UPDATE users SET fio = :fio, email = :email, address = :address WHERE id = :user_id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':fio', $fio);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':address', $address);
+        $stmt->bindParam(':user_id', $_SESSION['user_id']);
+        $stmt->execute();
+    }
 }
 ?>
 
@@ -127,10 +140,17 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
 
         <div class="profile_info">
+            <?php
+            $sql = "SELECT * FROM users WHERE id = :user_id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(':user_id', $_SESSION['user_id']);
+            $stmt->execute();
+            $profile = $stmt->fetch();
+            ?>
             <form action="" method="post" class="profile_info_inputs">
-                <input type="text" name="name" value="<?=$_SESSION['name']?>">
-                <input type="text" name="email" placeholder="Ваш емэил">
-                <input type="text" name="address" placeholder="Ваш адрес">
+                <input type="text" name="name" value="<?= $profile['fio'] ? htmlspecialchars($profile['fio']) : '' ?>">
+                <input type="text" name="email" placeholder="Ваш емэил" value="<?= $profile['email'] ? htmlspecialchars($profile['email']) : '' ?>">
+                <input type="text" name="address" placeholder="Ваш адрес" value="<?= $profile['address'] ? htmlspecialchars($profile['address']) : '' ?>">
                 <button type="submit" name="profile_update" class="pcart-main-order__buy">Обновить данные</button>
             </form>
             <div class="profile_info_orders">
@@ -231,7 +251,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                                             <div class="page-cart-product__price_main">
                                                 <span class="page-cart-product__price_current"><span class="price"><?=$order_product['price']?></span> BYN</span>
                                             </div>
-
 
                                     </div>
                                 </div>
